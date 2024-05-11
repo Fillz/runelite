@@ -4,7 +4,7 @@ public class PouchClickOperation extends ClickOperation
 {
 	Pouch pouch;
 	int delta;
-	public PouchClickOperation(int tick, int delta, Pouch pouch)
+	public PouchClickOperation(Pouch pouch, int tick, int delta)
 	{
 		super(tick);
 		this.pouch = pouch;

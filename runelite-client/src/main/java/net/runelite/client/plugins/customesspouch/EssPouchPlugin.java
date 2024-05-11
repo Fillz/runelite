@@ -119,7 +119,7 @@ public class EssPouchPlugin extends Plugin
 
 	private final Deque<ClickOperation> clickedItems = new ArrayDeque<>();
 	private final LinkedHashSet<ClickOperation> clickOperations = new LinkedHashSet<>();
-	private final Deque<ClickOperation> checkedPouches = new ArrayDeque<>();
+	private final Deque<PouchClickOperation> checkedPouches = new ArrayDeque<>();
 	private int lastEssence;
 	private int lastSpace;
 	private boolean gotrStarted;
@@ -148,9 +148,9 @@ public class EssPouchPlugin extends Plugin
 
 	// Pops ClickOperations from checkedPouches until it finds one that is still valid this tick and returns that one.
 	// Returns null if there are no valid pouches in the list.
-	private ClickOperation popFirstValidCheckedPouch()
+	private PouchClickOperation popFirstValidCheckedPouch()
 	{
-		ClickOperation op = checkedPouches.pollFirst();
+		PouchClickOperation op = checkedPouches.pollFirst();
 		while (op != null && op.tick < client.getTickCount())
 		{
 			op = checkedPouches.pollFirst();
@@ -183,7 +183,7 @@ public class EssPouchPlugin extends Plugin
 		{
 			if (event.getMessage().equals(POUCH_ADD_FULL_MESSAGE))
 			{
-				ClickOperation op = popFirstValidCheckedPouch();
+				PouchClickOperation op = popFirstValidCheckedPouch();
 				// Make sure it was a filling operation that produced this message
 				if (op != null && op.delta == 1)
 				{
@@ -199,7 +199,7 @@ public class EssPouchPlugin extends Plugin
 				if (matcher.matches())
 				{
 					final int num = TEXT_TO_NUMBER.get(matcher.group(1));
-					ClickOperation op = popFirstValidCheckedPouch();
+					PouchClickOperation op = popFirstValidCheckedPouch();
 					// Update if it was a check operation (delta == 0) or an empty operation and it is now empty. The
 					// empty operation only produces the message if it was already completely empty
 					if (op != null && (op.delta == 0 || (op.delta == -1 && num == 0)))
@@ -299,7 +299,7 @@ public class EssPouchPlugin extends Plugin
 
 		log.debug("Begin processing {} events, last ess: {} space: {}, cur ess {}: space {}", clickedItems.size(), lastEssence, lastSpace, newEss, newSpace);
 
-		while (essence != newEss)
+		/*while (essence != newEss)
 		{
 			ClickOperation op = clickedItems.poll();
 			if (op == null)
@@ -343,7 +343,7 @@ public class EssPouchPlugin extends Plugin
 		}
 
 		lastSpace = newSpace;
-		lastEssence = newEss;
+		lastEssence = newEss;*/
 
 
 		// new stuff:
@@ -353,7 +353,7 @@ public class EssPouchPlugin extends Plugin
 			ClickOperation op = it.next();
 			if (tick > op.tick)
 			{
-				log.debug("Click op timed out");a
+				log.debug("Click op timed out");
 				continue;
 			}
 
@@ -410,7 +410,7 @@ public class EssPouchPlugin extends Plugin
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
 		int itemId = -1;
-		log.info(event.getMenuOption());
+		log.info(event.getMenuAction().name());
 		switch (event.getMenuAction())
 		{
 			case ITEM_FIRST_OPTION:
@@ -468,15 +468,15 @@ public class EssPouchPlugin extends Plugin
 		switch (event.getMenuOption())
 		{
 			case "Fill":
-				clickedItems.add(new ClickOperation(pouch, tick, 1));
-				checkedPouches.add(new ClickOperation(pouch, tick, 1));
+				clickedItems.add(new PouchClickOperation(pouch, tick, 1));
+				checkedPouches.add(new PouchClickOperation(pouch, tick, 1));
 				break;
 			case "Empty":
-				clickedItems.add(new ClickOperation(pouch, tick, -1));
-				checkedPouches.add(new ClickOperation(pouch, tick, -1));
+				clickedItems.add(new PouchClickOperation(pouch, tick, -1));
+				checkedPouches.add(new PouchClickOperation(pouch, tick, -1));
 				break;
 			case "Check":
-				checkedPouches.add(new ClickOperation(pouch, tick));
+				checkedPouches.add(new PouchClickOperation(pouch, tick, 0));
 				break;
 			case "Take":
 				// Dropping pouches clears them, so clear when picked up
